@@ -1,0 +1,88 @@
+== Description
+   Provides hostname and ip address information for a given host.
+    
+== Synopsis
+   require 'sys/host'
+   include Sys
+
+   p Host.hostname
+   p Host.ip_addr
+    
+   # Some platforms
+   Host.info{ |h|
+      p h
+   }
+
+== Constants
+VERSION
+    Returns the current version number of this library (as a string)
+    
+== Class Methods
+Host.hostname
+    Returns the hostname of the current host.  This may or not return
+    the FQDN, depending on your system.
+    
+Host.ip_addr
+   Returns a list of IP addresses for the current host (yes, it is
+   possible to have more than one).
+    
+Host.info(host=localhost)
+Host.info(host=localhost){ |h| ... }
+   Yields a HostInfo struct for each network adapter on 'host', or an array
+   of HostInfo struct's in non-block form.  The exact members of this struct
+   vary depending on your platform.
+    
+== Exception Classes
+Host::Error < StandardError
+   Raised in the event of a failure for any of the class methods provided
+   with this library.  Generally speaking, it means there was a failure in
+   the underlying gethostname() or gethostbyname() calls.
+    
+== Future Plans
+   Add support for IPV6.  This will be difficult unless I have access to a
+   system on an IPV6 network.  Any help on this front appreciated.
+    
+== Notes
+   The Windows version of this library uses OLE + WMI.  The Host.info method
+   returns considerably more information than the *nix versions of this
+   library.
+   
+== Comments and Questions
+   Please direct all comments and/or questions to one of the Forums on the
+   project home page at http://www.rubyforge.org/projects/sysutils.
+	
+== Known Bugs
+   None that I'm aware of.
+
+   Please log any bugs on the project home page at
+   http://www.rubyforge.org/projects/sysutils
+    
+== Acknowledgements
+   Thanks go to Mike Hall, Guy Decoux, and Matz for their help with
+   C extensions in general.
+
+   Thanks also go to Richard Stevens for his excellent Unix programming
+   books.
+    
+== License
+   Ruby's
+    
+== Copyright
+   Copyright 2002-2008, Daniel J. Berger, djberg96 at gmail dot com
+
+   All Rights Reserved. This module is free software. It may be used,
+   redistributed and/or modified under the same terms as Ruby itself.
+    
+== Warranty
+   This library is provided "as is" and without any express or
+   implied warranties, including, without limitation, the implied
+   warranties of merchantability and fitness for a particular purpose.
+	
+== Author
+   Daniel J. Berger
+   djberg96 at gmail dot com
+   imperator on IRC (freenode)
+    
+== See Also
+   gethostbyname, gethostbyname_r, gethostname, hostname (Unix)
+   WMI, OLE (Windows)

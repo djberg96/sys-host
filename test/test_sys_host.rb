@@ -1,0 +1,95 @@
+###########################################################################
+# test_sys_host.rb
+#
+# Test suite for sys-host, all platforms. You should run these tests via
+# the 'rake test' task.
+###########################################################################
+require 'rubygems'
+gem 'test-unit'
+
+require 'sys/host'
+require 'test/unit'
+require 'rbconfig'
+include Config
+include Sys
+
+class TC_Sys_Host < Test::Unit::TestCase
+   def self.startup
+      if CONFIG['host_os'] =~ /mswin|solaris|linux|bsd|mach|darwin|osx/i
+         @@info_supported = true
+      else
+         @@info_supported = false
+      end
+
+      @@windows = CONFIG['host_os'].match('mswin')
+   end
+
+   def test_version
+      assert_equal('0.6.1', Host::VERSION)
+   end
+
+   def test_hostname_basic
+      assert_respond_to(Host, :hostname)
+      assert_nothing_raised{ Host.hostname }
+   end
+
+   def test_hostname
+      assert_kind_of(String, Host.hostname)
+      assert_equal(`hostname`.chomp, Host.hostname) # sanity check
+   end
+
+   def test_hostname_expected_errors
+      assert_raise(ArgumentError){ Host.hostname(true) }
+   end
+
+   def test_ip_addr_basic
+      assert_respond_to(Host, :ip_addr)
+      assert_nothing_raised{ Host.ip_addr }
+   end
+
+   def test_ip_addr
+      assert_kind_of(Array, Host.ip_addr)
+      assert_kind_of(String, Host.ip_addr.first)
+   end
+
+   def test_ip_addr_expected_errors
+      assert_raise(ArgumentError){ Host.ip_addr(true) }
+   end
+
+   def test_host_id_basic
+      assert_respond_to(Host, :host_id)
+      assert_nothing_raised{ Host.host_id }
+   end
+
+   def test_host_id
+      type = @@windows ? String : Integer
+      assert_kind_of(type, Host.host_id)
+   end
+
+   def test_host_id_expected_errors
+      assert_raise(ArgumentError){ Host.host_id(true) }
+   end
+
+   def test_info_basic
+      omit_unless(@@info_supported, 'info test skipped on this platform')
+      assert_respond_to(Host, :info)
+      assert_nothing_raised{ Host.info }
+   end
+
+   def test_info
+      omit_unless(@@info_supported, 'info test skipped on this platform')
+      assert_kind_of(Array, Host.info)
+      assert_kind_of(Struct::HostInfo, Host.info.first)
+      assert_nil(Host.info{ })
+   end
+
+   def test_info_high_iteration
+      omit_unless(@@info_supported, 'info test skipped on this platform')
+      assert_nothing_raised{ 100.times{ Host.info } }
+   end
+
+   def self.shutdown
+      @@info_supported = nil
+      @@windows = nil
+   end
+end

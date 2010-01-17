@@ -1,0 +1,15 @@
+* CHANGES
+* MANIFEST
+* README
+* Rakefile
+* sys-host.gemspec
+* doc/host.txt
+* examples/example_sys_host.rb
+* ext/constants.h
+* ext/extconf.rb
+* ext/bsd/bsd.c
+* ext/generic/generic.c
+* ext/linux/linux.c
+* ext/sunos/sunos.c
+* lib/sys/windows.rb
+* test/test_sys_host.rb

@@ -1,0 +1,120 @@
+== 0.6.2 - ???
+* Changed license to Artistic 2.0.
+* Updated the gemspec, including an updated description, the addition of a
+  license, and changing test-unit to a development dependency.
+
+== 0.6.1 - 18-Nov-2008
+* Added the host_id method for Windows, which just returns the MAC address.
+* Fixed an issue in the Host.ip_addr method for MS Windows where multiple ip
+  addresses might not be handled properly. Thanks go to Murmansk Manny for the
+  spot and patch.
+* Updated the gemspec to include all .c and .h files now so that it should
+  successfully build and install on all Unix platforms.
+* Rakefile fix for MS Windows for the install task.
+* The test file is now "test_sys_host.rb".
+
+== 0.6.0 - 8-Jun-2007
+* Now supports OS X!
+* Added the Host.host_id class method.
+* Bug/warning fix for OS X.
+* HostError is now Host::Error.
+* Added a Rakefile, including tasks for installation and testing.
+* Fixed the gemspec (I hope).
+* Lots of internal reorganization, including the removal of the install.rb
+  file. That's handled by the Rakefile.
+
+== 0.5.2 - 27-Jun-2006
+* Added the Host.info method for Linux.
+
+== 0.5.1 - 3-Mar-2006
+* The Host.info method is now supported on Solaris.
+* Moved project to RubyForge.
+* Replaced INSTALL with README.
+* Made documentation rdoc friendly.
+ 
+== 0.5.0 - 3-Jul-2004
+* Replaced Windows C extension with pure Ruby version, using WMI + OLE.
+* Added an additional class method called 'info' that returns a HostInfo
+  struct.  Currently on Windows only.
+* Removed the block form of Host.ip_addr. It now simply returns an Array.
+* Renamed and revamped test suite.
+* Moved test.rb to doc/examples
+* Removed the host.html file.
+* Replaced previous exception classes with a single exception class,
+  HostError, and moved it under the Sys module namespace.
+
+== 0.4.0 - 15-Jun-2003
+* Added MS Windows support
+* Modified extconf.rb file - generic test script now in its own file
+  (test/test.rb) and the dynamic rd2 stuff was removed, in addition to proper
+  handling for MS Windows
+* rd2, txt and html docs now included by default
+* Removed VERSION() class method (use the constant instead)
+* Added a universal constants.h file to store VERSION info, etc, that
+  is common to all source files.
+* Added LICENSE info
+
+== 0.3.4 - 3-Apr-2003
+* Fixed a header include issue for solaris systems that don't
+  define inet_ntop().
+
+== 0.3.3 * 24-Mar-2003
+* If inet_ntop() is not defined, now falls back to inet_ntoa().
+
+== 0.3.2 - 14-Mar-2003
+* Added a VERSION constant
+* Modified extconf.rb script, including a bugfix for solaris
+* Added a test suite (for those with testunit installed)
+* Removed the sys-uname requirement
+* Changelog and Manifest are now CHANGES and MANIFEST, respectively
+* Minor internal layout changes
+* rd2 documentation removed from C source files and put into 'doc'
+  directory
+
+== 0.3.1 - 6-Jan-2003
+* Fix to make code C89 compliant so that older compilers don't choke.
+* Added a VERSION class method
+* Added a copyright notice
+* Moved README into doc/host.txt
+* Minor doc changes
+* Fixed extconf.rb file to include socket lib for Solaris.  This was
+  in 0.2.0 and was mistakenly left out of 0.3.0.
+
+== 0.3.0 - 28-Oct-2002
+* Reentrant (thread-safe) support added for ip_addr() method (for Linux,
+  FreeBSD and Solaris currently).
+* The file layout changed so that each platform has its own source file.
+  This was done because different platforms have different implementations
+  of gethostbyname_r(), if they have them at all.  Some platforms (e.g.
+  FreeBSD) use a different function altogether.
+* The file generic.c is used to create the source if the platform is not
+  currently supported, or if gethostbyname_r() isn't found.
+* The FreeBSD implementation uses getipnodebyname() instead of
+  gethostbyname(), if possible.  According to the man page, it's thread
+  safe.
+* Modifications to the extconf.rb file based on the above changes.
+* Added a default value of 16 for INET_ADDRSTRLEN.
+* Added a README file.
+
+== 0.2.0 - 1-Sep-2002
+* Added HostException and HostAddressException classes.  These are raised
+  in the event the gethostname or gethostbyname call fails, respectively.
+* Removed some unnecessary (and warning-causing) free calls.
+* Added an INSTALL file (installation instructions removed from core doc).
+
+== 0.1.2 - 9-Aug-2002
+* Got the BSD support working properly this time.  Thanks to Sean
+  Chittenden for providing BSD access.
+
+== 0.1.1 - 21-Jun-2002
+* Fixed a bug that would cause the ip_addr to segfault on some
+  operating systems.  Apparently ,trying to free memory on a 
+  null pointer is a bad thing.  Hey, Solaris didn't complain!
+  Thanks go to Han Holl for the spot.
+* On *BSD systems the 'netinet/in.h' file is now included (via
+  the makefile).  Thanks go to Magnus Stahre for the spot and
+  the fix.
+* Changed the version number to be more "ruby compliant"
+
+== 0.01 * 11-Jun-2002
+* First release!
