@@ -136,6 +136,7 @@ static VALUE host_info(VALUE klass){
     while(*addrs){
       inet_ntop(result->h_addrtype, addrs, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
+      memset(buf, 0, sizeof(buf));
       addrs++;
     }
 #else
@@ -143,12 +144,11 @@ static VALUE host_info(VALUE klass){
       inet_ntop(result->h_addrtype, *result->h_addr_list, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
       *result->h_addr_list++;
+      memset(buf, 0, sizeof(buf));
     }
 #endif
 
-    /* We need to dup the arrays because Ruby is holding onto the same
-     * reference.
-     */
+    // Dup the arrays because Ruby is holding onto the same reference.
     v_hostinfo = rb_struct_new(sHostInfo,
       rb_str_new2(result->h_name),
       rb_ary_dup(v_aliases),
@@ -171,13 +171,15 @@ static VALUE host_info(VALUE klass){
     while(*addrs){
       inet_ntop(host->h_addrtype, addrs, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
+      memset(buf, 0, sizeof(buf));
       addrs++;
     }
 #else
     while(*host->h_addr_list){
       inet_ntop(host->h_addrtype, *host->h_addr_list, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
-       *host->h_addr_list++;
+      memset(buf, 0, sizeof(buf));
+      *host->h_addr_list++;
     }
 #endif
 
@@ -189,7 +191,6 @@ static VALUE host_info(VALUE klass){
       rb_ary_dup(v_addr)
     );         
 #endif
-
     if(rb_block_given_p())
       rb_yield(v_hostinfo);
     else
