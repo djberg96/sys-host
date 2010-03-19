@@ -6,6 +6,8 @@ include Config
 desc "Clean the build files for the sys-host source for UNIX systems"
 task :clean do
   rm_rf('.test-result') if File.exists?('.test-result')
+  rm_rf 'conftest.dSYM' if File.exists?('conftest.dSYM') # OS X
+
   Dir['*.gem'].each{ |f| File.delete(f) }
    
   case Config::CONFIG['host_os']
@@ -99,10 +101,19 @@ desc "Run the example sys-host program"
 task :example => [:build] do
    Dir.mkdir('sys') unless File.exists?('sys')
    if CONFIG['host_os'].match('mswin')
-      FileUtils.cp('lib/sys/windows.rb', 'lib/sys/host.rb')
-      ruby '-Ilib examples/example_sys_host.rb'
+      ruby '-Ilib/windows examples/example_sys_host.rb'
    else
-      ruby '-Iext examples/example_sys_host.rb'
+      case Config::CONFIG['host_os']
+        when /bsd|darwin/i
+          dir = 'ext/bsd'
+        when /sunos|solaris/i
+          dir = 'ext/sunos'
+        when /linux/i
+          dir = 'ext/linux'
+        else
+          dir = 'ext/generic'
+      end
+      ruby "-I#{dir} examples/example_sys_host.rb"
    end
 end
 
@@ -128,7 +139,7 @@ end
 
 namespace 'gem' do
   desc 'Create the sys-host gem file'
-  task :create do
+  task :create => [:clean] do
     spec = eval(IO.read('sys-host.gemspec'))
 
     case Config::CONFIG['host_os']
@@ -145,6 +156,7 @@ namespace 'gem' do
          spec.extra_rdoc_files << 'ext/sunos/sys/host.c'
          spec.extensions = ['ext/sunos/extconf.rb']
       when /mswin|win32|dos|cygwin|mingw/i
+         spec.platform = Gem::Platform::CURRENT
          spec.require_paths = ['lib', 'lib/windows']
          spec.files += ['lib/windows/sys/host.rb']
       else
