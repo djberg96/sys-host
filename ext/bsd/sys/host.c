@@ -126,13 +126,15 @@ static VALUE host_info(VALUE klass){
   int err;
 
   while(!gethostent_r(&host, buf, HOSTENT_BUF, &result, &err)){
-    while(*result->h_aliases){
-      rb_ary_push(v_aliases, rb_str_new2(*result->h_aliases));
-      *result->h_aliases++;
+#ifdef __MACH__ or #ifdef __APPLE__
+    char **aliases = result->h_aliases;
+    char **addrs = result->h_addr_list;
+
+    while(*aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*aliases));
+      *aliases++;
     }
 
-#ifdef __MACH__ or #ifdef __APPLE__
-    char **addrs = host->h_addr_list;
     while(*addrs){
       inet_ntop(result->h_addrtype, addrs, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
@@ -140,6 +142,11 @@ static VALUE host_info(VALUE klass){
       addrs++;
     }
 #else
+    while(*result->h_aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*result->h_aliases));
+      *result->h_aliases++;
+    }
+
     while(*result->h_addr_list){
       inet_ntop(result->h_addrtype, *result->h_addr_list, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
@@ -161,13 +168,15 @@ static VALUE host_info(VALUE klass){
   char buf[INET_ADDRSTRLEN];
 
   while((host = gethostent())){
-    while(*host->h_aliases){
-      rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
-      *host->h_aliases++;
+#ifdef __MACH__ or #ifdef __APPLE__
+    char **aliases = host->h_aliases;
+    char **addrs = host->h_addr_list;
+
+    while(*aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*aliases));
+      *aliases++;
     }
 
-#ifdef __MACH__ or #ifdef __APPLE__
-    char **addrs = host->h_addr_list;
     while(*addrs){
       inet_ntop(host->h_addrtype, addrs, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
@@ -175,6 +184,11 @@ static VALUE host_info(VALUE klass){
       addrs++;
     }
 #else
+    while(*host->h_aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
+      *host->h_aliases++;
+    }
+
     while(*host->h_addr_list){
       inet_ntop(host->h_addrtype, *host->h_addr_list, buf, HOSTENT_BUF);
       rb_ary_push(v_addr, rb_str_new2(buf));
