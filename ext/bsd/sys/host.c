@@ -122,10 +122,11 @@ static VALUE host_info(VALUE klass){
 #ifdef HAVE_GETHOSTENT_R
   struct hostent host;
   struct hostent* result;
-  char buf[HOSTENT_BUF];
+  char sbuf[HOSTENT_BUF];
+  char ibuf[INET_ADDRSTRLEN];
   int err;
 
-  while(!gethostent_r(&host, buf, HOSTENT_BUF, &result, &err)){
+  while(!gethostent_r(&host, sbuf, HOSTENT_BUF, &result, &err)){
 #ifdef __MACH__ or #ifdef __APPLE__
     char **aliases = result->h_aliases;
     char **addrs = result->h_addr_list;
@@ -136,9 +137,9 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*addrs){
-      inet_ntop(result->h_addrtype, addrs, buf, HOSTENT_BUF);
-      rb_ary_push(v_addr, rb_str_new2(buf));
-      memset(buf, 0, sizeof(buf));
+      inet_ntop(result->h_addrtype, addrs, addr, INET_ADDRSTRLEN);
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
+      memset(ibuf, 0, sizeof(ibuf));
       addrs++;
     }
 #else
@@ -148,10 +149,10 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*result->h_addr_list){
-      inet_ntop(result->h_addrtype, *result->h_addr_list, buf, HOSTENT_BUF);
-      rb_ary_push(v_addr, rb_str_new2(buf));
+      inet_ntop(result->h_addrtype, *result->h_addr_list, ibuf, INET_ADDRSTRLEN);
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
       *result->h_addr_list++;
-      memset(buf, 0, sizeof(buf));
+      memset(ibuf, 0, sizeof(ibuf));
     }
 #endif
 
@@ -165,7 +166,7 @@ static VALUE host_info(VALUE klass){
     );         
 #else
   struct hostent* host;
-  char buf[INET_ADDRSTRLEN];
+  char ibuf[INET_ADDRSTRLEN];
 
   while((host = gethostent())){
 #ifdef __MACH__ or #ifdef __APPLE__
@@ -178,9 +179,9 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*addrs){
-      inet_ntop(host->h_addrtype, addrs, buf, HOSTENT_BUF);
-      rb_ary_push(v_addr, rb_str_new2(buf));
-      memset(buf, 0, sizeof(buf));
+      inet_ntop(host->h_addrtype, addrs, ibuf, INET_ADDRSTRLEN);
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
+      memset(ibuf, 0, sizeof(ibuf));
       addrs++;
     }
 #else
@@ -190,9 +191,9 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*host->h_addr_list){
-      inet_ntop(host->h_addrtype, *host->h_addr_list, buf, HOSTENT_BUF);
-      rb_ary_push(v_addr, rb_str_new2(buf));
-      memset(buf, 0, sizeof(buf));
+      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, INET_ADDRSTRLEN);
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
+      memset(ibuf, 0, sizeof(ibuf));
       *host->h_addr_list++;
     }
 #endif
