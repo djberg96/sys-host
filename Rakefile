@@ -53,13 +53,6 @@ task :build => [:clean] do
   end
 end
 
-desc "Run the example program"
-task :example => [:build] do
-  Dir.chdir('examples') do
-    ruby 'example_sys_host.rb'
-  end
-end
-
 desc 'Install the sys-host library'
 task :install => [:build] do
   file = nil
