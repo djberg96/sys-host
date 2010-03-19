@@ -2,11 +2,17 @@ require 'win32ole'
 require 'socket'
 require 'time'
 
+# The Sys module serves as a namespace only.
 module Sys
+   # The Host class encapsulates methods that return information about the local host.
    class Host
+      # Error class typically raised if any of the Host methods fail.
       class Error < StandardError; end
       
-      VERSION = '0.6.1'
+      # The version of the sys-host library.
+      VERSION = '0.6.2'
+
+      # :stopdoc:
       
       fields = %w/
          arp_always_source_route?
@@ -72,6 +78,8 @@ module Sys
       /
       
       HostInfo = Struct.new("HostInfo", *fields)
+
+      # :startdoc:
       
       # Yields a HostInfo struct for each network adapter on 'host', or an array
       # of HostInfo struct's in non-block form.  The exact members of this struct

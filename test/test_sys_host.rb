@@ -25,7 +25,7 @@ class TC_Sys_Host < Test::Unit::TestCase
    end
 
    def test_version
-      assert_equal('0.6.1', Host::VERSION)
+      assert_equal('0.6.2', Host::VERSION)
    end
 
    def test_hostname_basic
