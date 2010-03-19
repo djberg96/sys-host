@@ -137,16 +137,20 @@ namespace 'gem' do
          spec.extra_rdoc_files << 'ext/bsd/sys/host.c'
          spec.extensions = ['ext/bsd/extconf.rb']
       when /linux/i
-         spec.files << 'ext/bsd/sys/host.c'
-         spec.extra_rdoc_files << 'ext/bsd/sys/host.c'
-         spec.extensions = ['ext/bsd/extconf.rb']
+         spec.files << 'ext/linux/sys/host.c'
+         spec.extra_rdoc_files << 'ext/linux/sys/host.c'
+         spec.extensions = ['ext/linux/extconf.rb']
       when /sunos|solaris/i
-         spec.files << 'ext/bsd/sys/host.c'
-         spec.extra_rdoc_files << 'ext/bsd/sys/host.c'
-         spec.extensions = ['ext/bsd/extconf.rb']
+         spec.files << 'ext/sunos/sys/host.c'
+         spec.extra_rdoc_files << 'ext/sunos/sys/host.c'
+         spec.extensions = ['ext/sunos/extconf.rb']
       when /mswin|win32|dos|cygwin|mingw/i
          spec.require_paths = ['lib', 'lib/windows']
          spec.files += ['lib/windows/sys/host.rb']
+      else
+         spec.files << 'ext/generic/sys/host.c'
+         spec.extra_rdoc_files << 'ext/generic/sys/host.c'
+         spec.extensions = ['ext/generic/extconf.rb']
     end
 
     Gem::Builder.new(spec).build 
