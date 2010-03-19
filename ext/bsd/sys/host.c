@@ -107,8 +107,8 @@ static VALUE host_ip_addr(){
  *
  * * name      (String)
  * * aliases   (Array)
- * * addr_type (Integer)
- * * length    (Integer)
+ * * addr_type (Integer) => Typically 2 (AF_INET) or 28 (AF_INET6)
+ * * length    (Integer) => Typically 4 (IPv4) or 16 (IPv6)
  * * addr_list (Array)
  */
 static VALUE host_info(VALUE klass){
