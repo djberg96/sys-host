@@ -12,14 +12,14 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define SYS_HOST_VERSION "0.6.2"
+#define SYS_HOST_VERSION "0.6.3"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 256
 #endif
 
-#ifndef INET_ADDRSTRLEN
-#define INET_ADDRSTRLEN 16
+#ifndef INET6_ADDRSTRLEN
+#define INET6_ADDRSTRLEN 48
 #endif
 
 #ifndef HOSTENT_BUF
@@ -52,7 +52,7 @@ static VALUE host_hostname()
 static VALUE host_ip_addr()
 {
   char host_name[MAXHOSTNAMELEN];
-  char str[INET_ADDRSTRLEN];
+  char str[INET6_ADDRSTRLEN];
   char **pptr;
   struct hostent* hp;
   VALUE v_results = rb_ary_new();
@@ -115,15 +115,16 @@ static VALUE host_host_id(){
  */
 static VALUE host_info(VALUE klass){
   struct hostent* host;
-  char ibuf[INET_ADDRSTRLEN];
-  VALUE v_hostinfo;
-  VALUE v_addr    = rb_ary_new();
-  VALUE v_array   = rb_ary_new();
-  VALUE v_aliases = rb_ary_new();
+  char ibuf[INET6_ADDRSTRLEN];
+  VALUE v_hostinfo, v_addr, v_aliases;
+  VALUE v_array = rb_ary_new();
 
   sethostent(0);
 
   while((host = gethostent())){
+    v_aliases = rb_ary_new();
+    v_addr = rb_ary_new();
+
     while(*host->h_aliases){
       rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
       *host->h_aliases++;
@@ -140,22 +141,14 @@ static VALUE host_info(VALUE klass){
       v_aliases,
       INT2FIX(host->h_addrtype),
       INT2FIX(host->h_length),
-      rb_ary_dup(v_addr)
+      v_addr
     );
 
-    if(rb_block_given_p())
-      rb_yield(v_hostinfo);
-    else
-      rb_ary_push(v_array, v_hostinfo);
-
-    rb_ary_clear(v_aliases);   
-    rb_ary_clear(v_addr);
+    OBJ_FREEZE(v_hostinfo);
+    rb_ary_push(v_array, v_hostinfo);
   }
 
   endhostent();
-
-  if(rb_block_given_p())
-    return Qnil;
 
   return v_array;
 }
@@ -175,7 +168,7 @@ void Init_host()
   /* This error is raised if any of the Host methods fail. */
   cHostError = rb_define_class_under(cHost, "Error", rb_eStandardError);
 
-  /* 0.6.2: The version of this library. This is a string, not a number. */
+  /* 0.6.3: The version of this library. This is a string, not a number. */
   rb_define_const(cHost, "VERSION", rb_str_new2(SYS_HOST_VERSION));
 
   // Singleton methods
