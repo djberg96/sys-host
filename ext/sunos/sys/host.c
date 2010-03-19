@@ -50,12 +50,13 @@ VALUE cHostError, sHostInfo;
  */
 static VALUE host_hostname()
 {
-   char host_name[MAXHOSTNAMELEN];
+  char host_name[MAXHOSTNAMELEN];
 
-   if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
-      rb_raise(cHostError, "gethostname() call failed");
+  // If this fails something has seriously gone wrong.
+  if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
+    rb_raise(cHostError, "gethostname() call failed");
 
-   return rb_str_new2(host_name);
+  return rb_str_new2(host_name);
 }
 
 #ifdef HAVE_GETHOSTID
@@ -76,50 +77,50 @@ static VALUE host_host_id(){
  */
 static VALUE host_ip_addr()
 {
-   char host_name[MAXHOSTNAMELEN];
-   struct hostent* hp;
-   VALUE v_addr = rb_ary_new();
+  char host_name[MAXHOSTNAMELEN];
+  struct hostent* hp;
+  VALUE v_addr = rb_ary_new();
 #ifndef HAVE_INET_NTOP
-   struct in_addr ipa;
+  struct in_addr ipa;
 #endif
 
-   if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
-      rb_raise(cHostError, "gethostname() call failed");
+  if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
+    rb_raise(cHostError, "gethostname() call failed");
 
 #ifdef HAVE_GETHOSTBYNAME_R
 {
-   char buf[HOSTENT_BUF];
-   struct hostent hp_buf;
-   int err;
-   hp = gethostbyname_r(host_name, &hp_buf, buf, HOSTENT_BUF, &err);
+  char buf[HOSTENT_BUF];
+  struct hostent hp_buf;
+  int err;
+  hp = gethostbyname_r(host_name, &hp_buf, buf, HOSTENT_BUF, &err);
 }
 #else
-   hp = gethostbyname(host_name);
+  hp = gethostbyname(host_name);
 #endif
 
-   if(!hp)
-      rb_raise(cHostError, "gethostbyname() call failed");
+  if(!hp)
+    rb_raise(cHostError, "gethostbyname() call failed");
 
 #ifdef HAVE_INET_NTOP
-   char str[INET_ADDRSTRLEN];
-   while(*hp->h_addr_list){
-      rb_ary_push(
-         v_addr,
-         rb_str_new2(
-            inet_ntop(hp->h_addrtype, *hp->h_addr_list, str, INET_ADDRSTRLEN)
-         )
-      );
-      *hp->h_addr_list++;
-   }
+  char str[INET_ADDRSTRLEN];
+  while(*hp->h_addr_list){
+    rb_ary_push(
+      v_addr,
+      rb_str_new2(
+        inet_ntop(hp->h_addrtype, *hp->h_addr_list, str, INET_ADDRSTRLEN)
+      )
+    );
+    *hp->h_addr_list++;
+  }
 #else
-   int n;
-   for(n = 0; hp->h_addr_list[n] != NULL; n++){
-      memcpy(&ipa.s_addr, hp->h_addr_list[n], hp->h_length);
-      rb_ary_push(v_addr, rb_str_new2(inet_ntoa(ipa)));
-   }
+  int n;
+  for(n = 0; hp->h_addr_list[n] != NULL; n++){
+    memcpy(&ipa.s_addr, hp->h_addr_list[n], hp->h_length);
+    rb_ary_push(v_addr, rb_str_new2(inet_ntoa(ipa)));
+  }
 #endif
 
-   return v_addr;
+  return v_addr;
 }
 
 /*
@@ -139,77 +140,80 @@ static VALUE host_ip_addr()
  * * addr_list (Array)
  */
 static VALUE host_info(VALUE klass){
-   VALUE v_hostinfo;
-   VALUE v_addr    = rb_ary_new();
-   VALUE v_array   = rb_ary_new();
-   VALUE v_aliases = rb_ary_new();
+  VALUE v_hostinfo;
+  VALUE v_addr    = rb_ary_new();
+  VALUE v_array   = rb_ary_new();
+  VALUE v_aliases = rb_ary_new();
 
-   sethostent(0);
+  sethostent(0);
 
 #ifdef HAVE_GETHOSTENT_R
-   struct hostent host;
-   char buf[MAXBUF];
-   int err;
+  struct hostent host;
+  char sbuf[MAXBUF];
+  char ibuf[INET_ADDRSTRLEN];
+  int err;
 
-   while(gethostent_r(&host, buf, MAXBUF, &err)){
-      while(*host.h_aliases){
-         rb_ary_push(v_aliases, rb_str_new2(*host.h_aliases));
-         *host.h_aliases++;
-      }
+  while(gethostent_r(&host, sbuf, MAXBUF, &err)){
+    while(*host.h_aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*host.h_aliases));
+      *host.h_aliases++;
+    }
 
-      while(*host.h_addr_list){
-         inet_ntop(host.h_addrtype, *host.h_addr_list, buf, MAXBUF);
-         rb_ary_push(v_addr, rb_str_new2(buf));
-         *host.h_addr_list++;
-      }
+    while(*host.h_addr_list){
+      inet_ntop(host.h_addrtype, *host.h_addr_list, ibuf, MAXBUF);
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
+      *host.h_addr_list++;
+    }
 
-      v_hostinfo = rb_struct_new(sHostInfo,
-         rb_str_new2(host.h_name),
-         v_aliases,
-         INT2FIX(host.h_addrtype),
-         INT2FIX(host.h_length),
-         v_addr
-      );         
+    // Dup the array since Ruby is reusing the same reference
+    v_hostinfo = rb_struct_new(sHostInfo,
+      rb_str_new2(host.h_name),
+      v_aliases,
+      INT2FIX(host.h_addrtype),
+      INT2FIX(host.h_length),
+      rb_ary_dup(v_addr)
+    );         
 #else
-   struct hostent* host;
-   char buf[INET_ADDRSTRLEN];
+  struct hostent* host;
+  char ibuf[INET_ADDRSTRLEN];
 
-   while((host = gethostent())){
-      while(*host->h_aliases){
-         rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
-         *host->h_aliases++;
-      }
+  while((host = gethostent())){
+    while(*host->h_aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
+      *host->h_aliases++;
+    }
 
-      while(*host->h_addr_list){
-         inet_ntop(host->h_addrtype, *host->h_addr_list, buf, INET_ADDRSTRLEN);
-         rb_ary_push(v_addr, rb_str_new2(buf));
-         *host->h_addr_list++;
-      }
+    while(*host->h_addr_list){
+      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, INET_ADDRSTRLEN);
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
+      *host->h_addr_list++;
+    }
 
-      v_hostinfo = rb_struct_new(sHostInfo,
-         rb_str_new2(host->h_name),
-         v_aliases,
-         INT2FIX(host->h_addrtype),
-         INT2FIX(host->h_length),
-         v_addr
-      );         
+    // Dup the array since Ruby is reusing the same reference
+    v_hostinfo = rb_struct_new(sHostInfo,
+      rb_str_new2(host->h_name),
+      v_aliases,
+      INT2FIX(host->h_addrtype),
+      INT2FIX(host->h_length),
+      rb_ary_dup(v_addr)
+    );         
 #endif
 
-      if(rb_block_given_p())
-         rb_yield(v_hostinfo);
-      else
-         rb_ary_push(v_array, v_hostinfo);
+    if(rb_block_given_p())
+      rb_yield(v_hostinfo);
+    else
+      rb_ary_push(v_array, v_hostinfo);
 
-      rb_ary_clear(v_aliases);   
-      rb_ary_clear(v_addr);
-   }      
+    rb_ary_clear(v_aliases);   
+    rb_ary_clear(v_addr);
+  }      
 
-   endhostent();
+  endhostent();
 
-   if(rb_block_given_p())
-      return Qnil;
+  if(rb_block_given_p())
+    return Qnil;
 
-   return v_array;
+  return v_array;
 }
 
 void Init_host()
@@ -236,6 +240,10 @@ void Init_host()
   rb_define_singleton_method(cHost, "ip_addr", host_ip_addr, 0);
   rb_define_singleton_method(cHost, "info", host_info, 0);
 
+#ifdef HAVE_GETHOSTID
+  rb_define_singleton_method(cHost, "host_id", host_host_id, 0);
+#endif
+
   // Struct definitions
 
   sHostInfo = rb_struct_define(
@@ -247,8 +255,4 @@ void Init_host()
     "addr_list",
     NULL
   );
-
-#ifdef HAVE_GETHOSTID
-  rb_define_singleton_method(cHost, "host_id", host_host_id, 0);
-#endif
 }
