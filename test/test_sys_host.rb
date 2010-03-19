@@ -83,6 +83,40 @@ class TC_Sys_Host < Test::Unit::TestCase
     assert_nil(Host.info{ })
   end
 
+  def test_info_name_member
+    omit_unless(@@info_supported, 'info test skipped on this platform')
+    assert_true(Host.info.first.members.map{ |e| e.to_s }.include?('name'))
+    assert_kind_of(String, Host.info.first.name)
+    assert_true(Host.info.first.name.size > 0)
+  end
+
+  def test_info_addr_type_member
+    omit_unless(@@info_supported, 'info test skipped on this platform')
+    assert_true(Host.info.first.members.map{ |e| e.to_s }.include?('addr_type'))
+    assert_kind_of(Fixnum, Host.info.first.addr_type)
+    assert_true(Host.info.first.addr_type >= 0)
+  end
+
+  def test_info_aliases_member
+    omit_unless(@@info_supported, 'info test skipped on this platform')
+    assert_true(Host.info.first.members.map{ |e| e.to_s }.include?('aliases'))
+    assert_kind_of(Array, Host.info.first.aliases)
+  end
+
+  def test_info_length_member
+    omit_unless(@@info_supported, 'info test skipped on this platform')
+    assert_true(Host.info.first.members.map{ |e| e.to_s }.include?('length'))
+    assert_kind_of(Fixnum, Host.info.first.length)
+    assert_true(Host.info.first.length >= 4)
+  end
+
+  def test_info_addr_list_member
+    omit_unless(@@info_supported, 'info test skipped on this platform')
+    assert_true(Host.info.first.members.map{ |e| e.to_s }.include?('addr_list'))
+    assert_kind_of(Array, Host.info.first.addr_list)
+    assert_true(Host.info.first.addr_list.first.length > 0)
+  end
+
   def test_info_high_iteration
     omit_unless(@@info_supported, 'info test skipped on this platform')
     assert_nothing_raised{ 100.times{ Host.info } }
