@@ -51,39 +51,39 @@ static VALUE host_hostname()
  */
 static VALUE host_ip_addr()
 {
-   char host_name[MAXHOSTNAMELEN];
-   char str[INET_ADDRSTRLEN];
-   char **pptr;
-   struct hostent* hp;
-   VALUE v_results = rb_ary_new();
+  char host_name[MAXHOSTNAMELEN];
+  char str[INET_ADDRSTRLEN];
+  char **pptr;
+  struct hostent* hp;
+  VALUE v_results = rb_ary_new();
 #ifndef HAVE_INET_NTOP
-   struct in_addr ipa;
-   int n;
+  struct in_addr ipa;
+  int n;
 #endif
 
-   if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
-      rb_raise(cHostError, "gethostname() call failed");
+  if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
+    rb_raise(cHostError, "gethostname() call failed");
 
-   hp = gethostbyname(host_name);
+  hp = gethostbyname(host_name);
 
-   if(!hp)
-      rb_raise(cHostError, "gethostbyname() call failed");
+  if(!hp)
+    rb_raise(cHostError, "gethostbyname() call failed");
 
-   pptr = hp->h_addr_list;
+  pptr = hp->h_addr_list;
 
 #ifdef HAVE_INET_NTOP
-   for( ; *pptr != NULL; pptr++) {
-      rb_ary_push(v_results,
-         rb_str_new2(inet_ntop(hp->h_addrtype, *pptr, str, sizeof(str))));
-   }
+  for( ; *pptr != NULL; pptr++) {
+    rb_ary_push(v_results,
+      rb_str_new2(inet_ntop(hp->h_addrtype, *pptr, str, sizeof(str))));
+  }
 #else
-   for(n = 0; hp->h_addr_list[n] != NULL; n++) {
-      memcpy(&ipa.s_addr, hp->h_addr_list[n], hp->h_length);
-      rb_ary_push(v_results, rb_str_new2(inet_ntoa(ipa)));
-   }
+  for(n = 0; hp->h_addr_list[n] != NULL; n++) {
+    memcpy(&ipa.s_addr, hp->h_addr_list[n], hp->h_length);
+    rb_ary_push(v_results, rb_str_new2(inet_ntoa(ipa)));
+  }
 #endif
-   return v_results;
-   
+
+  return v_results;
 }
 
 #ifdef HAVE_GETHOSTID
@@ -93,7 +93,7 @@ static VALUE host_ip_addr()
  * Returns the host id of the current machine.
  */
 static VALUE host_host_id(){
-   return ULL2NUM(gethostid());
+  return ULL2NUM(gethostid());
 }
 #endif
 
@@ -109,55 +109,55 @@ static VALUE host_host_id(){
  *
  * * name      (String)
  * * aliases   (Array)
- * * addr_type (Integer)
- * * length    (Integer)
+ * * addr_type (Integer) => Typically 2 (AF_INET) or 28 (AF_INET6)
+ * * length    (Integer) => Typically 4 (IPv4) or 16 (IPv6)
  * * addr_list (Array)
  */
 static VALUE host_info(VALUE klass){
-   struct hostent* host;
-   char buf[INET_ADDRSTRLEN];
-   VALUE v_hostinfo;
-   VALUE v_addr    = rb_ary_new();
-   VALUE v_array   = rb_ary_new();
-   VALUE v_aliases = rb_ary_new();
+  struct hostent* host;
+  char ibuf[INET_ADDRSTRLEN];
+  VALUE v_hostinfo;
+  VALUE v_addr    = rb_ary_new();
+  VALUE v_array   = rb_ary_new();
+  VALUE v_aliases = rb_ary_new();
 
-   sethostent(0);
+  sethostent(0);
 
-   while((host = gethostent())){
-      while(*host->h_aliases){
-         rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
-         *host->h_aliases++;
-      }
+  while((host = gethostent())){
+    while(*host->h_aliases){
+      rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
+      *host->h_aliases++;
+    }
 
-      while(*host->h_addr_list){
-         inet_ntop(host->h_addrtype, *host->h_addr_list, buf, sizeof(buf));
-         rb_ary_push(v_addr, rb_str_new2(buf));
-         *host->h_addr_list++;
-      }
+    while(*host->h_addr_list){
+      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, sizeof(ibuf));
+      rb_ary_push(v_addr, rb_str_new2(ibuf));
+      *host->h_addr_list++;
+    }
 
-      v_hostinfo = rb_struct_new(sHostInfo,
-         rb_str_new2(host->h_name),
-         v_aliases,
-         INT2FIX(host->h_addrtype),
-         INT2FIX(host->h_length),
-         v_addr
-      );
+    v_hostinfo = rb_struct_new(sHostInfo,
+      rb_str_new2(host->h_name),
+      v_aliases,
+      INT2FIX(host->h_addrtype),
+      INT2FIX(host->h_length),
+      rb_ary_dup(v_addr)
+    );
 
-      if(rb_block_given_p())
-         rb_yield(v_hostinfo);
-      else
-         rb_ary_push(v_array, v_hostinfo);
+    if(rb_block_given_p())
+      rb_yield(v_hostinfo);
+    else
+      rb_ary_push(v_array, v_hostinfo);
 
-      rb_ary_clear(v_aliases);   
-      rb_ary_clear(v_addr);
-   }
+    rb_ary_clear(v_aliases);   
+    rb_ary_clear(v_addr);
+  }
 
-   endhostent();
+  endhostent();
 
-   if(rb_block_given_p())
-      return Qnil;
+  if(rb_block_given_p())
+    return Qnil;
 
-   return v_array;
+  return v_array;
 }
 
 void Init_host()
@@ -176,7 +176,7 @@ void Init_host()
   cHostError = rb_define_class_under(cHost, "Error", rb_eStandardError);
 
   /* 0.6.2: The version of this library. This is a string, not a number. */
-  rb_define_const(cHost,"VERSION",rb_str_new2(SYS_HOST_VERSION));
+  rb_define_const(cHost, "VERSION", rb_str_new2(SYS_HOST_VERSION));
 
   // Singleton methods
 
