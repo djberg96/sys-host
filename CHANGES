@@ -1,7 +1,7 @@
-== 0.6.2 - ???
+== 0.6.2 - 20-Mar-2010
 * Changed license to Artistic 2.0.
-* The Host.host_id method has been modified to return a hex value in order
-  to be consisten with other platforms.
+* The Host.host_id method has been modified to return a hex value on MS
+  Windows in order to be consistent with other platforms.
 * Some internal directory layout changes and corresponding changes to the
   Rakefile.
 * Additional Rakefile tasks that remove the need for some code that was
