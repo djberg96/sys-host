@@ -1,5 +1,11 @@
 == 0.6.2 - ???
 * Changed license to Artistic 2.0.
+* The Host.host_id method has been modified to return a hex value in order
+  to be consisten with other platforms.
+* Some internal directory layout changes and corresponding changes to the
+  Rakefile.
+* Additional Rakefile tasks that remove the need for some code that was
+  previously inlined into the gemspec directly.
 * Updated the gemspec, including an updated description, the addition of a
   license, and changing test-unit to a development dependency.
 
