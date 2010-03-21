@@ -11,14 +11,14 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#define SYS_HOST_VERSION "0.6.2"
+#define SYS_HOST_VERSION "0.6.3"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 256
 #endif
 
-#ifndef INET_ADDRSTRLEN
-#define INET_ADDRSTRLEN 16
+#ifndef INET6_ADDRSTRLEN
+#define INET6_ADDRSTRLEN 48
 #endif
 
 #ifndef HOSTENT_BUF
@@ -56,7 +56,7 @@ static VALUE host_hostname(){
  */
 static VALUE host_ip_addr(){
   char host_name[MAXHOSTNAMELEN];
-  char str[INET_ADDRSTRLEN];
+  char str[INET6_ADDRSTRLEN];
   char **pptr;
   struct hostent* hp;
   int err;
@@ -83,7 +83,7 @@ static VALUE host_ip_addr(){
 #ifdef HAVE_INET_NTOP
   for( ; *pptr != NULL; pptr++){
     rb_ary_push(v_results,
-      rb_str_new2(inet_ntop(hp->h_addrtype, *pptr, str, INET_ADDRSTRLEN)));
+      rb_str_new2(inet_ntop(hp->h_addrtype, *pptr, str, INET6_ADDRSTRLEN)));
   }
 #else
   for(n = 0; hp->h_addr_list[n] != NULL; n++){
@@ -123,7 +123,7 @@ static VALUE host_info(VALUE klass){
   struct hostent host;
   struct hostent* result;
   char sbuf[HOSTENT_BUF];
-  char ibuf[INET_ADDRSTRLEN];
+  char ibuf[INET6_ADDRSTRLEN];
   int err;
 
   while(!gethostent_r(&host, sbuf, HOSTENT_BUF, &result, &err)){
@@ -137,7 +137,7 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*addrs){
-      inet_ntop(result->h_addrtype, addrs, addr, INET_ADDRSTRLEN);
+      inet_ntop(result->h_addrtype, addrs, addr, INET6_ADDRSTRLEN);
       rb_ary_push(v_addr, rb_str_new2(ibuf));
       memset(ibuf, 0, sizeof(ibuf));
       addrs++;
@@ -149,7 +149,7 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*result->h_addr_list){
-      inet_ntop(result->h_addrtype, *result->h_addr_list, ibuf, INET_ADDRSTRLEN);
+      inet_ntop(result->h_addrtype, *result->h_addr_list, ibuf, INET6_ADDRSTRLEN);
       rb_ary_push(v_addr, rb_str_new2(ibuf));
       *result->h_addr_list++;
       memset(ibuf, 0, sizeof(ibuf));
@@ -166,7 +166,7 @@ static VALUE host_info(VALUE klass){
     );         
 #else
   struct hostent* host;
-  char ibuf[INET_ADDRSTRLEN];
+  char ibuf[INET6_ADDRSTRLEN];
 
   while((host = gethostent())){
 #ifdef __MACH__ or #ifdef __APPLE__
@@ -179,7 +179,7 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*addrs){
-      inet_ntop(host->h_addrtype, addrs, ibuf, INET_ADDRSTRLEN);
+      inet_ntop(host->h_addrtype, addrs, ibuf, INET6_ADDRSTRLEN);
       rb_ary_push(v_addr, rb_str_new2(ibuf));
       memset(ibuf, 0, sizeof(ibuf));
       addrs++;
@@ -191,7 +191,7 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*host->h_addr_list){
-      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, INET_ADDRSTRLEN);
+      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, INET6_ADDRSTRLEN);
       rb_ary_push(v_addr, rb_str_new2(ibuf));
       memset(ibuf, 0, sizeof(ibuf));
       *host->h_addr_list++;
