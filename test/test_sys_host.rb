@@ -82,6 +82,10 @@ class TC_Sys_Host < Test::Unit::TestCase
     assert_kind_of(Struct::HostInfo, Host.info.first)
   end
 
+  def test_info_struct_is_frozen
+    assert_true(Host.info.first.frozen?)
+  end
+
   def test_info_name_member
     omit_unless(@@info_supported, 'info test skipped on this platform')
     assert_true(Host.info.first.members.map{ |e| e.to_s }.include?('name'))
