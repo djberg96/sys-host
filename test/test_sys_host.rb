@@ -25,7 +25,7 @@ class TC_Sys_Host < Test::Unit::TestCase
   end
 
   def test_version
-    assert_equal('0.6.2', Host::VERSION)
+    assert_equal('0.6.3', Host::VERSION)
   end
 
   def test_hostname_basic
@@ -80,7 +80,6 @@ class TC_Sys_Host < Test::Unit::TestCase
     omit_unless(@@info_supported, 'info test skipped on this platform')
     assert_kind_of(Array, Host.info)
     assert_kind_of(Struct::HostInfo, Host.info.first)
-    assert_nil(Host.info{ })
   end
 
   def test_info_name_member
