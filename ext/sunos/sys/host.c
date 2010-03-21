@@ -7,14 +7,14 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#define SYS_HOST_VERSION "0.6.2"
+#define SYS_HOST_VERSION "0.6.3"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 256
 #endif
 
-#ifndef INET_ADDRSTRLEN
-#define INET_ADDRSTRLEN 16
+#ifndef INET6_ADDRSTRLEN
+#define INET6_ADDRSTRLEN 48
 #endif
 
 #ifndef HOSTENT_BUF
@@ -102,12 +102,12 @@ static VALUE host_ip_addr()
     rb_raise(cHostError, "gethostbyname() call failed");
 
 #ifdef HAVE_INET_NTOP
-  char str[INET_ADDRSTRLEN];
+  char str[INET6_ADDRSTRLEN];
   while(*hp->h_addr_list){
     rb_ary_push(
       v_addr,
       rb_str_new2(
-        inet_ntop(hp->h_addrtype, *hp->h_addr_list, str, INET_ADDRSTRLEN)
+        inet_ntop(hp->h_addrtype, *hp->h_addr_list, str, INET6_ADDRSTRLEN)
       )
     );
     *hp->h_addr_list++;
@@ -140,20 +140,21 @@ static VALUE host_ip_addr()
  * * addr_list (Array)
  */
 static VALUE host_info(VALUE klass){
-  VALUE v_hostinfo;
-  VALUE v_addr    = rb_ary_new();
-  VALUE v_array   = rb_ary_new();
-  VALUE v_aliases = rb_ary_new();
+  char ibuf[INET6_ADDRSTRLEN];
+  VALUE v_hostinfo, v_addr, v_aliases;
+  VALUE v_array = rb_ary_new();
 
   sethostent(0);
 
 #ifdef HAVE_GETHOSTENT_R
   struct hostent host;
   char sbuf[MAXBUF];
-  char ibuf[INET_ADDRSTRLEN];
   int err;
 
   while(gethostent_r(&host, sbuf, MAXBUF, &err)){
+    v_aliases = rb_ary_new();
+    v_addr = rb_ary_new();
+
     while(*host.h_aliases){
       rb_ary_push(v_aliases, rb_str_new2(*host.h_aliases));
       *host.h_aliases++;
@@ -165,53 +166,45 @@ static VALUE host_info(VALUE klass){
       *host.h_addr_list++;
     }
 
-    // Dup the array since Ruby is reusing the same reference
     v_hostinfo = rb_struct_new(sHostInfo,
       rb_str_new2(host.h_name),
       v_aliases,
       INT2FIX(host.h_addrtype),
       INT2FIX(host.h_length),
-      rb_ary_dup(v_addr)
+      v_addr
     );         
 #else
   struct hostent* host;
-  char ibuf[INET_ADDRSTRLEN];
 
   while((host = gethostent())){
+    v_aliases = rb_ary_new();
+    v_addr = rb_ary_new();
+
     while(*host->h_aliases){
       rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
       *host->h_aliases++;
     }
 
     while(*host->h_addr_list){
-      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, INET_ADDRSTRLEN);
+      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, sizeof(ibuf));
       rb_ary_push(v_addr, rb_str_new2(ibuf));
       *host->h_addr_list++;
     }
 
-    // Dup the array since Ruby is reusing the same reference
     v_hostinfo = rb_struct_new(sHostInfo,
       rb_str_new2(host->h_name),
       v_aliases,
       INT2FIX(host->h_addrtype),
       INT2FIX(host->h_length),
-      rb_ary_dup(v_addr)
+      v_addr
     );         
 #endif
 
-    if(rb_block_given_p())
-      rb_yield(v_hostinfo);
-    else
-      rb_ary_push(v_array, v_hostinfo);
-
-    rb_ary_clear(v_aliases);   
-    rb_ary_clear(v_addr);
+    OBJ_FREEZE(v_hostinfo);
+    rb_ary_push(v_array, v_hostinfo);
   }      
 
   endhostent();
-
-  if(rb_block_given_p())
-    return Qnil;
 
   return v_array;
 }
@@ -231,7 +224,7 @@ void Init_host()
   /* This error is raised if any of the Host methods fail. */
   cHostError = rb_define_class_under(cHost, "Error", rb_eStandardError);
 
-  /* 0.6.2: The version of this library. This is a string, not a number. */
+  /* 0.6.3: The version of this library. This is a string, not a number. */
   rb_define_const(cHost, "VERSION", rb_str_new2(SYS_HOST_VERSION));
 
   // Singleton Methods
