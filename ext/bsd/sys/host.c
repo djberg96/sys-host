@@ -112,66 +112,28 @@ static VALUE host_ip_addr(){
  * * addr_list (Array)
  */
 static VALUE host_info(VALUE klass){
-  VALUE v_hostinfo = Qnil;
-  VALUE v_addr     = rb_ary_new();
-  VALUE v_array    = rb_ary_new();
-  VALUE v_aliases  = rb_ary_new();
+  char ibuf[INET6_ADDRSTRLEN];
+  struct hostent* host;
+  VALUE v_hostinfo, v_aliases, v_addr;
+  VALUE v_array = rb_ary_new();
 
   sethostent(0);
 
 #ifdef HAVE_GETHOSTENT_R
-  struct hostent host;
-  struct hostent* result;
+  struct hostent temp;
   char sbuf[HOSTENT_BUF];
-  char ibuf[INET6_ADDRSTRLEN];
   int err;
-
-  while(!gethostent_r(&host, sbuf, HOSTENT_BUF, &result, &err)){
-#ifdef __MACH__ or #ifdef __APPLE__
-    char **aliases = result->h_aliases;
-    char **addrs = result->h_addr_list;
-
-    while(*aliases){
-      rb_ary_push(v_aliases, rb_str_new2(*aliases));
-      *aliases++;
-    }
-
-    while(*addrs){
-      inet_ntop(result->h_addrtype, addrs, addr, INET6_ADDRSTRLEN);
-      rb_ary_push(v_addr, rb_str_new2(ibuf));
-      memset(ibuf, 0, sizeof(ibuf));
-      addrs++;
-    }
-#else
-    while(*result->h_aliases){
-      rb_ary_push(v_aliases, rb_str_new2(*result->h_aliases));
-      *result->h_aliases++;
-    }
-
-    while(*result->h_addr_list){
-      inet_ntop(result->h_addrtype, *result->h_addr_list, ibuf, INET6_ADDRSTRLEN);
-      rb_ary_push(v_addr, rb_str_new2(ibuf));
-      *result->h_addr_list++;
-      memset(ibuf, 0, sizeof(ibuf));
-    }
 #endif
 
-    // Dup the arrays because Ruby is holding onto the same reference.
-    v_hostinfo = rb_struct_new(sHostInfo,
-      rb_str_new2(result->h_name),
-      rb_ary_dup(v_aliases),
-      INT2FIX(result->h_addrtype),
-      INT2FIX(result->h_length),
-      rb_ary_dup(v_addr)
-    );         
+#ifdef HAVE_GETHOSTENT_R
+  while(!gethostent_r(&temp, sbuf, HOSTENT_BUF, &host, &err)){
 #else
-  struct hostent* host;
-  char ibuf[INET6_ADDRSTRLEN];
-
   while((host = gethostent())){
-#ifdef __MACH__ or #ifdef __APPLE__
+#endif
     char **aliases = host->h_aliases;
     char **addrs = host->h_addr_list;
+    v_aliases = rb_ary_new();
+    v_addr    = rb_ary_new();
 
     while(*aliases){
       rb_ary_push(v_aliases, rb_str_new2(*aliases));
@@ -179,46 +141,26 @@ static VALUE host_info(VALUE klass){
     }
 
     while(*addrs){
-      inet_ntop(host->h_addrtype, addrs, ibuf, INET6_ADDRSTRLEN);
-      rb_ary_push(v_addr, rb_str_new2(ibuf));
-      memset(ibuf, 0, sizeof(ibuf));
-      addrs++;
-    }
-#else
-    while(*host->h_aliases){
-      rb_ary_push(v_aliases, rb_str_new2(*host->h_aliases));
-      *host->h_aliases++;
-    }
+      if(!inet_ntop(host->h_addrtype, addrs, ibuf, sizeof(ibuf)))
+        rb_raise(cHostError, "inet_ntop() failed: %s", strerror(errno));
 
-    while(*host->h_addr_list){
-      inet_ntop(host->h_addrtype, *host->h_addr_list, ibuf, INET6_ADDRSTRLEN);
       rb_ary_push(v_addr, rb_str_new2(ibuf));
-      memset(ibuf, 0, sizeof(ibuf));
-      *host->h_addr_list++;
+      *addrs++;
     }
-#endif
 
     v_hostinfo = rb_struct_new(sHostInfo,
       rb_str_new2(host->h_name),
-      rb_ary_dup(v_aliases),
+      v_aliases,
       INT2FIX(host->h_addrtype),
       INT2FIX(host->h_length),
-      rb_ary_dup(v_addr)
-    );         
-#endif
-    if(rb_block_given_p())
-      rb_yield(v_hostinfo);
-    else
-      rb_ary_push(v_array, v_hostinfo);
+      v_addr
+    );
 
-    rb_ary_clear(v_aliases);   
-    rb_ary_clear(v_addr);
-  }      
+    OBJ_FREEZE(v_hostinfo);
+    rb_ary_push(v_array, v_hostinfo);
+  }
 
   endhostent();
-
-  if(rb_block_given_p())
-    return Qnil;
 
   return v_array;
 }
