@@ -10,7 +10,7 @@ module Sys
     class Error < StandardError; end
       
     # The version of the sys-host library.
-    VERSION = '0.6.2'
+    VERSION = '0.6.3'
 
     # :stopdoc:
       
@@ -222,15 +222,12 @@ module Sys
             nic.WINSSecondaryServer
           )
 
-          if block_given?
-            yield struct
-          else
-            array << struct
-          end
+          struct.freeze
+          array << struct
         }
       end
 
-      block_given? ? nil : array
+      array
     end
       
     # Returns the hostname of the current host.  This may or not return
