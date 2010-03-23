@@ -93,7 +93,7 @@ end
 desc "Run the example sys-host program"
 task :example => [:build] do
    Dir.mkdir('sys') unless File.exists?('sys')
-   if CONFIG['host_os'].match('mswin')
+   if CONFIG['host_os'] =~ /mswin|win32|dos|cygwin|mingw/i
       ruby '-Ilib/windows examples/example_sys_host.rb'
    else
       case Config::CONFIG['host_os']
