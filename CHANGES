@@ -1,6 +1,6 @@
-== 0.6.3 - ???
-* The struct returned by Host.info is now frozen, and the Host.info method
-  no longer takes a block.
+== 0.6.3 - 30-Jul-2011
+* The structs returned by Host.info are now frozen.
+* The Host.info method no longer takes a block. It only returns an array.
 * Refactored the Rakefile clean task, and removed the old install task.
 * Removed a deprecated gemspec call.
 
