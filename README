@@ -1,26 +1,19 @@
-= Prerequisites
-   Ruby 1.8.0 or later.
-   Ruby 1.8.2 or later preferred on Windows.
-   
-= Synopsis
-   require 'sys/host'
-   include Sys
-
-   p Host.hostname
-   p Host.ip_addr
-
-   Host.info{ |h|
-      p h
-   }
+= Description
+  An interface for getting host information.  
 
 = Installation
-== Standard (non-gem) installation
-   rake test (optional)
-   rake install
+  gem install sys-host
+   
+= Synopsis
+  require 'sys/host'
+  include Sys
 
-== Gem Installation
-   rake test (optional)
-   rake install_gem
+  p Host.hostname
+  p Host.ip_addr
+
+  Host.info{ |h|
+    p h
+  }
 
 = Documentation
-   See the doc/host.txt file for more information.
+  See the doc/host.txt file for more information.

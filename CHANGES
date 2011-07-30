@@ -1,3 +1,7 @@
+== 0.6.3 - ???
+* Refactored the Rakefile clean task, and removed the old install task.
+* Removed a deprecated gemspec call.
+
 == 0.6.2 - 20-Mar-2010
 * Changed license to Artistic 2.0.
 * The Host.host_id method has been modified to return a hex value on MS

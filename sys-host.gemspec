@@ -6,7 +6,7 @@ include Config
 
 Gem::Specification.new do |spec|
   spec.name        = 'sys-host'
-  spec.version     = '0.6.2'
+  spec.version     = '0.6.3'
   spec.author      = 'Daniel J. Berger'
   spec.license     = 'Artistic 2.0'
   spec.email       = 'djberg96@gmail.com'
@@ -14,7 +14,6 @@ Gem::Specification.new do |spec|
   spec.platform    = Gem::Platform::RUBY
   spec.summary     = 'Provides hostname and ip address info for a given host'
   spec.test_file   = 'test/test_sys_host.rb'
-  spec.has_rdoc    = true
 
   spec.files = %w[
     CHANGES
@@ -30,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.extra_rdoc_files  = ['CHANGES', 'README', 'MANIFEST']
   spec.rubyforge_project = 'sysutils'
 
-  spec.add_development_dependency('test-unit', '>= 2.0.7')
+  spec.add_development_dependency('test-unit')
 
   spec.description = <<-EOF
     The sys-host library provides information about the current machine that
