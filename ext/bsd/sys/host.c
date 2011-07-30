@@ -97,11 +97,10 @@ static VALUE host_ip_addr(){
 
 /* :call-seq:
  *    Sys::Host.info
- *    Sys::Host.info{ |i| ... }
  *
- * Yields a HostInfo struct containing various bits of information about
- * the local machine for each entry in the hosts table.  In non-block form,
- * returns an array of HostInfo structs.
+ * Returns an array of HostInfo structs containing various bits of
+ * information about the local machine for each entry in the hosts
+ * table.
  *
  * The Struct::HostInfo struct contains 5 fields:
  *
@@ -191,7 +190,7 @@ void Init_host()
    /* This error is raised if any of the Host methods fail. */
    cHostError = rb_define_class_under(cHost, "Error", rb_eStandardError);
 
-   /* 0.6.2: The version of this library. This is a string, not a number. */
+   /* 0.6.3: The version of this library. This is a string, not a number. */
    rb_define_const(cHost, "VERSION", rb_str_new2(SYS_HOST_VERSION));
    
    /* Structs */

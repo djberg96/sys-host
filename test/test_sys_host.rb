@@ -21,7 +21,7 @@ class TC_Sys_Host < Test::Unit::TestCase
       @@info_supported = false
     end
 
-    @@windows = CONFIG['host_os'].match('mswin')
+    @@windows = File::ALT_SEPARATOR
   end
 
   def test_version

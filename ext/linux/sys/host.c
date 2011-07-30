@@ -206,6 +206,6 @@ void Init_host()
      NULL
   );
 
-  /* 0.6.2: The version of this library. This is a string, not a number. */
+  /* 0.6.3: The version of this library. This is a string, not a number. */
   rb_define_const(cHost, "VERSION", rb_str_new2(SYS_HOST_VERSION));
 }
