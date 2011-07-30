@@ -99,11 +99,10 @@ static VALUE host_host_id(){
 
 /*
  * Sys::Host.info
- * Sys::Host.info{ |i| ... }
  *
- * Yields a HostInfo struct containing various bits of information about
- * the local machine for each entry in the hosts table.  In non-block form,
- * returns an array of HostInfo structs.
+ * Returns an array of HostInfo structs containing various bits of
+ * information about the local machine for each entry in the hosts
+ * table.
  *
  * The Struct::HostInfo struct contains 5 fields:
  *
