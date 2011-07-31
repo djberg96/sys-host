@@ -66,8 +66,10 @@ static VALUE host_ip_addr(){
   int n;
 #endif
 
-  if(gethostname(host_name, MAXHOSTNAMELEN) != 0)
-    rb_raise(cHostError, "gethostname() call failed");
+  err = gethostname(host_name, MAXHOSTNAMELEN);
+
+  if(err)
+    rb_raise(cHostError, "gethostname() call failed: %s", strerror(err));
 
 #ifdef HAVE_GETIPNODEBYNAME
   hp = getipnodebyname(host_name, AF_INET, AI_DEFAULT, &err);
@@ -76,7 +78,7 @@ static VALUE host_ip_addr(){
 #endif
 
   if(hp == NULL)
-    rb_raise(cHostError, "getipnodebyname() call failed");
+    rb_raise(cHostError, "getipnodebyname() call failed: %s", strerror(err));
 
   pptr = hp->h_addr_list;
 
