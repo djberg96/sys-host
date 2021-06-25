@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.files = %w[
     CHANGES
     MANIFEST
-    README
+    README.md
     Rakefile
     sys-host.gemspec
     doc/host.txt
@@ -26,8 +26,7 @@ Gem::Specification.new do |spec|
     test/test_sys_host.rb
   ] 
 
-  spec.extra_rdoc_files  = ['CHANGES', 'README', 'MANIFEST']
-  spec.rubyforge_project = 'sysutils'
+  spec.extra_rdoc_files  = ['CHANGES', 'README.md', 'MANIFEST']
 
   spec.add_development_dependency('test-unit')
 
