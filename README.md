@@ -4,6 +4,8 @@ not use this library. It was mainly a learning exercise for C extensions from my
 earliest days of Ruby when I was just learning how to write them. I'm fairly
 certain anything this library does the socket library in stdlib can already do.
 
+This library will receive no further updates and the repository has been archived.
+
 ## Description
 An interface for getting host information.
 
